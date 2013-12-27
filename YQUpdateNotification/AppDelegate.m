@@ -25,7 +25,7 @@
     
     [YQUpdateHelper singleton].checkInterval = YQCheckDayly;
     [YQUpdateHelper singleton].appName = @"Test demo";
-    [[YQUpdateHelper singleton]setAppID:@"593444693"];
+    [[YQUpdateHelper singleton]setAppID:@"your app id"];
 
     return YES;
 }

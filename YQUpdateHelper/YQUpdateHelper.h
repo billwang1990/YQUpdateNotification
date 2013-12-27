@@ -25,8 +25,6 @@ typedef enum
 
 +(instancetype)singleton;
 
-@property (nonatomic) NSDate * lastVersionCheckDate;
-
 /**
  (OPTIONAL) defaulr check weekly
  */

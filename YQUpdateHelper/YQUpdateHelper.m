@@ -26,6 +26,8 @@
     NSString    *_currentVersionStr;
 }
 
+@property (nonatomic) NSDate * lastVersionCheckDate;
+
 @end
 
 @implementation YQUpdateHelper
