@@ -1,0 +1,11 @@
+/* 
+  File.strings
+  YQUpdateNotification
+
+  Created by niko on 13-12-26.
+  Copyright (c) 2013年 billwang1990.github.io. All rights reserved.
+*/
+
+"%@ has new version, download it now!" = "%@ has new version, download it now!";
+
+"Update Now" = "Update Now";
