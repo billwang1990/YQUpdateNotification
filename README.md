@@ -7,7 +7,7 @@ It's really a simple thing to use it, what you should do is add several lines co
 
     [YQUpdateHelper singleton].checkInterval = YQCheckDayly;
     [YQUpdateHelper singleton].appName = @"Test demo";
-    [[YQUpdateHelper singleton]setAppID:@"593444693"];
+    [[YQUpdateHelper singleton]setAppID:@"your app id"];
 
 And you also should one line code in - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification method like this :
 
