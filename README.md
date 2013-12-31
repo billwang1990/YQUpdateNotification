@@ -12,4 +12,12 @@ It's really a simple thing to use it, what you should do is add several lines co
 And you also should one line code in - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification method like this :
 
     [[YQUpdateHelper singleton] shouldHandleNotification:notification];
+    
+##How to use it?
+I recommend you use cocoapods to install it:
+
+	pod 'YQUpdateHelper', '~> 0.1.0'
+	
+Have fun!
+  
 
