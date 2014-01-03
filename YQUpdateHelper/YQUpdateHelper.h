@@ -16,7 +16,7 @@ typedef enum
 
 @protocol YQUpdateNewVersionNotifyDelegate <NSObject>
 
-- (void)hanleNewVersionDetectedEvent;
+- (void)handleNewVersionDetectedEvent;
 
 @end
 
@@ -49,7 +49,12 @@ typedef enum
  (OPTIONAL) If your application is not availabe in the U.S. Store, you must specify the two-letter
  country code for the region in which your applicaiton is available in.
  */
-@property (copy, nonatomic) NSString *countryCode;
+@property (strong, nonatomic) NSString *countryCode;
+
+/**
+ (OPTIONAL) You can specify the local notification alert body string;
+ */
+@property (strong, nonatomic) NSString *notificationBodyString;
 
 /**
  Add this method in application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification

@@ -18,6 +18,8 @@
 #define kYQLocalizedString(stringKey)  [[NSBundle bundleWithPath:kYQBundle] localizedStringForKey:stringKey value:stringKey table:@"YQLocalizable"]
 
 #define kTimeDelayOpenAppStore 1.0f
+#define kLocalNotificationKey   @"kLocalNotificationKey"
+#define kLocalNotificationValue @"kLocalNotificationValue"
 
 
 @interface YQUpdateHelper()
@@ -59,8 +61,7 @@
 
 -(void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationWillResignActiveNotification object:nil];
-    [[NSNotificationCenter defaultCenter]removeObserver:self name:UIApplicationDidFinishLaunchingNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 -(void)setDelegate:(id<YQUpdateNewVersionNotifyDelegate>)delegate
@@ -68,6 +69,7 @@
     if (delegate && ![delegate conformsToProtocol:@protocol(YQUpdateNewVersionNotifyDelegate) ]) {
         [[NSException exceptionWithName:NSInvalidArgumentException reason:@"Delegate object not conform to the delegate protocol" userInfo:nil] raise];
     }
+    
     _delegate = delegate;
 }
 
@@ -100,19 +102,16 @@
             // All versions that have been uploaded to the AppStore
             NSArray *versionsInAppStore = [[result valueForKey:@"results"] valueForKey:@"version"];
             
-            if (0 == [versionsInAppStore count]) { // No versions of app in AppStore
-
+            if (0 == [versionsInAppStore count]) {
+                // No versions of app in AppStore
                 return;
-                
             } else {
                 
                 NSString *currentAppStoreVersion = [versionsInAppStore objectAtIndex:0];
                 
                 if ([kCurrentAppVersion compare:currentAppStoreVersion options:NSNumericSearch] == NSOrderedAscending) {
-                    
                     _shoulPostLocalNotification = YES;
                     _currentVersionStr = currentAppStoreVersion;
-
 
                 } else {
                     
@@ -136,7 +135,7 @@
     NSString *appName = ([self appName]) ? [self appName] : [[[NSBundle mainBundle] infoDictionary] objectForKey:(NSString*)kCFBundleNameKey];
     
     for (UILocalNotification *note in [UIApplication sharedApplication].scheduledLocalNotifications) {
-        if ([note.userInfo[@"YQId"] isEqualToString:@"detectedNewVersion"]) {
+        if ([note.userInfo[kLocalNotificationKey] isEqualToString:kLocalNotificationValue]) {
             //remove previous local notification
             [[UIApplication sharedApplication]cancelLocalNotification:note];
         }
@@ -145,31 +144,40 @@
     UILocalNotification *notify = [[UILocalNotification alloc]init];
     notify.fireDate = [NSDate dateWithTimeIntervalSinceNow:2.0];
     notify.hasAction = YES;
-    notify.alertBody = [NSString stringWithFormat:kYQLocalizedString(@"%@ has new version, download it now!"), appName];
+    
+    if (self.notificationBodyString && self.notificationBodyString.length >0) {
+        notify.alertBody = self.notificationBodyString;
+    }
+    else
+        notify.alertBody = [NSString stringWithFormat:kYQLocalizedString(@"%@ has new version, download it now!"), appName];
+    
     notify.alertAction = kYQLocalizedString(@"Update Now");
-    notify.userInfo = @{@"YQId": @"detectedNewVersion", @"Version": _currentVersionStr};
+    notify.userInfo = @{kLocalNotificationKey: kLocalNotificationValue, @"Version": _currentVersionStr};
     
     [[UIApplication sharedApplication] scheduleLocalNotification:notify];
 }
 
+#pragma mark Handle UILocalNotification
 -(void)shouldHandleNotification:(UILocalNotification *)notification
 {
-    if ([notification.userInfo[@"YQId"] isEqualToString:@"detectedNewVersion"] && ([kCurrentAppVersion compare:[notification.userInfo objectForKey:@"Version"] options:NSNumericSearch] == NSOrderedAscending )) {
+    if ([notification.userInfo[kLocalNotificationKey] isEqualToString:kLocalNotificationValue] && ([kCurrentAppVersion compare:[notification.userInfo objectForKey:@"Version"] options:NSNumericSearch] == NSOrderedAscending )) {
         
-        if (self.delegate && [self.delegate respondsToSelector:@selector(hanleNewVersionDetectedEvent)]) {
-            [self.delegate hanleNewVersionDetectedEvent];
+        if (self.delegate && [self.delegate respondsToSelector:@selector(handleNewVersionDetectedEvent)]) {
+            [self.delegate handleNewVersionDetectedEvent];
         }
         else
         {
-            //open App store, default action
             [self performSelector:@selector(launchAppStore) withObject:nil afterDelay:kTimeDelayOpenAppStore];
         }
     }
 }
 
+#pragma mark Handle NSNotification
 -(void)handleLauchNotification:(NSNotification*)notify
 {
     if ([notify.name isEqualToString:UIApplicationDidFinishLaunchingNotification]) {
+        
+        //handle application launch notification
         UILocalNotification *localNotify = nil;
         if ((localNotify = [notify.userInfo objectForKey:UIApplicationLaunchOptionsLocalNotificationKey])) {
             [self shouldHandleNotification:localNotify];
@@ -177,6 +185,7 @@
     }
     else if ([notify.name isEqualToString:UIApplicationDidBecomeActiveNotification])
     {
+        //handle application become active notification
         _shoulPostLocalNotification = NO;
         if (self.checkInterval == YQCheckDayly) {
             [self checkVersionDaily];
@@ -189,11 +198,10 @@
 - (void)launchAppStore
 {
     NSString *iTunesString = [NSString stringWithFormat:@"http://itunes.apple.com/app/id%@", [self appID]];
-    NSLog(@"link %@", iTunesString);
+//    NSLog(@"link %@", iTunesString);
     NSURL *iTunesURL = [NSURL URLWithString:iTunesString];
     
     [[UIApplication sharedApplication] openURL:iTunesURL];
-
 }
 
 -(void)checkVersionDaily
@@ -214,7 +222,6 @@
 {
     if (!self.lastVersionCheckDate) {
         self.lastVersionCheckDate = [NSDate date];
-        
         [self checkVersion];
     }
     else
