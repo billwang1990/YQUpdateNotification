@@ -7,7 +7,7 @@ YQUpdateHelper will post a local notification if there is a new version of your 
 
 I strongly recommend you use cocoapods to install:
 
-	pod 'YQUpdateHelper', '~> 0.1.0'
+	pod 'YQUpdateHelper', '~> 0.1.1'
 	
 It's really simple to use it, you should add several lines code in  
 
